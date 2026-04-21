@@ -1,5 +1,6 @@
 import { _decorator, Component, Node, Sprite, Color, Vec3, tween, Label, Graphics } from 'cc';
 import { GameManager } from './GameManager';
+import { DamageType, calculateFinalDamage } from './damageTypes';
 const { ccclass, property } = _decorator;
 
 @ccclass('Soldier')
@@ -24,7 +25,11 @@ export class Soldier extends Component {
     public buyCost: number = 100;
     @property
     public upgradeCost: number = 80;
-    
+
+    // ========== 伤害类型 ==========
+    @property({ type: String })
+    public damageType: DamageType = DamageType.PHYSICAL;
+
     // ========== 攻击轨迹设置 ==========
     @property
     public showAttackLine: boolean = true;  // 是否显示攻击线
@@ -42,11 +47,16 @@ export class Soldier extends Component {
     private level: number = 1;
     private upgradeDamageBonus: number = 0;      // 每级+5伤害
     private upgradeAttackSpeedBonus: number = 0; // 每级+10%攻速
-    
+
+    // ========== Support塔增益属性 ==========
+    public hasSupportBuff: boolean = false;
+    public supportDamageBonus: number = 0;
+    public supportAttackSpeedBonus: number = 0;
+
     // ========== 运行时属性 ==========
     private currentHp: number = 0;
     private attackTimer: number = 0;
-    private currentTarget: Node = null;
+    protected currentTarget: Node = null;
     
     // ========== UI 组件 ==========
     @property(Sprite)
@@ -97,13 +107,23 @@ export class Soldier extends Component {
     
     getFinalDamage(): number {
         const bonus = GameManager.instance?.damageBonus || 1;
-        return (this.baseDamage + this.upgradeDamageBonus) * bonus;
+        const baseDamage = (this.baseDamage + this.upgradeDamageBonus) * bonus;
+        // 应用 Support 塔增益
+        if (this.hasSupportBuff) {
+            return baseDamage * (1 + this.supportDamageBonus);
+        }
+        return baseDamage;
     }
     
     getFinalAttackSpeed(): number {
         const bonus = GameManager.instance?.attackSpeedBonus || 1;
         // 攻速：值越小攻击越快，升级加成减少间隔
-        return (this.baseAttackSpeed / (1 + this.upgradeAttackSpeedBonus)) / bonus;
+        let attackSpeed = (this.baseAttackSpeed / (1 + this.upgradeAttackSpeedBonus)) / bonus;
+        // 应用 Support 塔增益（减少攻击间隔，即增加攻速）
+        if (this.hasSupportBuff) {
+            attackSpeed = attackSpeed / (1 + this.supportAttackSpeedBonus);
+        }
+        return attackSpeed;
     }
     
     getFinalRange(): number {
@@ -147,7 +167,7 @@ export class Soldier extends Component {
         this.currentTarget = closestEnemy;
     }
     
-    findAllEnemies(node: Node, callback: (enemy: Node) => void) {
+    protected findAllEnemies(node: Node, callback: (enemy: Node) => void) {
         // 检查当前节点是否是敌人
         const enemyComp = node.getComponent('Enemy');
         if (enemyComp) {
@@ -161,23 +181,28 @@ export class Soldier extends Component {
     
     // ========== 攻击 ==========
     
-    attack() {
+    protected attack() {
         if (!this.currentTarget || !this.currentTarget.isValid) return;
-        
+
         const enemyScript = this.currentTarget.getComponent('Enemy') as any;
         if (enemyScript && enemyScript.takeDamage) {
-            const damage = this.getFinalDamage();
-            enemyScript.takeDamage(damage);
-            console.log(`${this.soldierName} 攻击敌人，造成 ${damage} 伤害`);
-            
+            const baseDamage = this.getFinalDamage();
+            // 获取敌人类型
+            const enemyType = enemyScript.enemyType || 'basic';
+            // 计算最终伤害（考虑伤害类型和抗性）
+            const finalDamage = calculateFinalDamage(baseDamage, enemyType, this.damageType as DamageType);
+
+            enemyScript.takeDamage(finalDamage);
+            console.log(`${this.soldierName} (${this.damageType}) 攻击 ${enemyType} 敌人，造成 ${finalDamage} 伤害`);
+
             // 攻击特效
             this.playAttackEffect();
-            
+
             // 攻击轨迹
             if (this.showAttackLine) {
                 this.showAttackLineEffect();
             }
-            
+
             // 攻击粒子
             if (this.showAttackParticle) {
                 this.showAttackParticleEffect();

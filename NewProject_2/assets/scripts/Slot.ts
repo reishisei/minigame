@@ -1,5 +1,6 @@
 import { _decorator, Component, Node, Prefab, instantiate, Sprite, Color, Label } from 'cc';
 import { Soldier } from './Soldier';
+import { GameManager } from './GameManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('Slot')
@@ -14,6 +15,14 @@ export class Slot extends Component {
     public musketeerPrefab: Prefab = null;
     @property(Prefab)
     public cannonPrefab: Prefab = null;
+    @property(Prefab)
+    public magePrefab: Prefab = null;
+    @property(Prefab)
+    public icePrefab: Prefab = null;
+    @property(Prefab)
+    public supportPrefab: Prefab = null;
+    @property(Prefab)
+    public sniperPrefab: Prefab = null;
     
     // UI 元素
     @property(Sprite)
@@ -101,6 +110,30 @@ export class Slot extends Component {
                 typeName = "守城炮";
                 iconColor = new Color(255, 0, 0);  // 红色
                 break;
+            case "mage":
+                prefab = this.magePrefab;
+                cost = 180;
+                typeName = "法师";
+                iconColor = new Color(128, 0, 255);  // 紫色
+                break;
+            case "ice":
+                prefab = this.icePrefab;
+                cost = 160;
+                typeName = "寒冰塔";
+                iconColor = new Color(0, 200, 255);  // 浅蓝色
+                break;
+            case "support":
+                prefab = this.supportPrefab;
+                cost = 220;
+                typeName = "支援塔";
+                iconColor = new Color(255, 255, 0);  // 黄色
+                break;
+            case "sniper":
+                prefab = this.sniperPrefab;
+                cost = 300;
+                typeName = "狙击塔";
+                iconColor = new Color(255, 255, 255);  // 白色
+                break;
         }
         
         if (!prefab) {
@@ -109,7 +142,7 @@ export class Slot extends Component {
         }
         
         // 检查金币
-        const gm = (this.node.scene.getComponentInChildren('GameManager') as any);
+        const gm = GameManager.instance;
         if (!gm || !gm.spendGold(cost)) {
             console.log("金币不足");
             return false;
@@ -124,7 +157,13 @@ export class Slot extends Component {
         
         // 更新 UI 显示
         this.updateSlotUI(true, typeName, iconColor);
-        
+
+        // 触发塔建造事件
+        const gm2 = GameManager.instance;
+        if (gm2) {
+            gm2.towerBuilt(soldierType);
+        }
+
         console.log(`在槽位 ${this.slotIndex} 放置了 ${typeName}`);
         return true;
     }
@@ -135,10 +174,17 @@ export class Slot extends Component {
             console.log("槽位没有士兵");
             return false;
         }
-        
+
         const result = this.currentSoldierScript.upgrade();
         if (result) {
             this.updateLevelDisplay();
+
+            // 触发塔升级事件
+            const gm = GameManager.instance;
+            if (gm) {
+                const newLevel = this.currentSoldierScript.getLevel();
+                gm.towerUpgraded(this.currentSoldierType, newLevel);
+            }
         }
         return result;
     }

@@ -13,6 +13,14 @@ export class Enemy extends Component {
     @property
     maxHp: number = 3;  // 敌人血量
 
+    @property
+    enemyType: string = 'basic';  // 敌人类型: basic, fast, armored, flying, boss, swarm
+
+    // 减速效果属性
+    private originalSpeed: number = 100;
+    private slowMultiplier: number = 1.0;
+    private slowTimer: number = 0;
+
     private startY: number = 500;
     private endY: number = -300;
     private currentHp: number = 0;
@@ -93,22 +101,20 @@ export class Enemy extends Component {
 
     die() {
         console.log("敌人死亡");
-        
-        // 增加金币和经验
+
+        // 使用新的奖励系统
         const gm = GameManager.instance;
         if (gm) {
-            gm.addGold(10);   // 每个敌人掉落 10 金币
-            gm.addExp(5);     // 每个敌人掉落 5 经验
-            console.log(`获得 10 金币，5 经验`);
+            gm.enemyKilled(this.enemyType);
         } else {
             console.log("GameManager 未找到");
         }
-        
+
         // 停止移动动画
         if (this.currentTween) {
             this.currentTween.stop();
         }
-        
+
         this.node.destroy();
     }
     

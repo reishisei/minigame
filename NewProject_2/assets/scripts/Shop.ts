@@ -87,7 +87,43 @@ export class Shop extends Component {
             }
         }
     }
-    
+
+    onBuyMage() {
+        if (this.selectedSlot) {
+            if (this.selectedSlot.placeSoldier("mage")) {
+                this.updateInfo();
+                this.onClose(); // 购买成功后自动关闭商店
+            }
+        }
+    }
+
+    onBuyIce() {
+        if (this.selectedSlot) {
+            if (this.selectedSlot.placeSoldier("ice")) {
+                this.updateInfo();
+                this.onClose(); // 购买成功后自动关闭商店
+            }
+        }
+    }
+
+    onBuySupport() {
+        if (this.selectedSlot) {
+            if (this.selectedSlot.placeSoldier("support")) {
+                this.updateInfo();
+                this.onClose(); // 购买成功后自动关闭商店
+            }
+        }
+    }
+
+    onBuySniper() {
+        if (this.selectedSlot) {
+            if (this.selectedSlot.placeSoldier("sniper")) {
+                this.updateInfo();
+                this.onClose(); // 购买成功后自动关闭商店
+            }
+        }
+    }
+
     onUpgrade() {
         if (this.selectedSlot) {
             if (this.selectedSlot.upgradeSoldier()) {
