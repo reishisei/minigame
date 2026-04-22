@@ -1,4 +1,5 @@
 import { _decorator, Component, Label, director } from 'cc';
+import { GameManager } from './GameManager';
 const { ccclass, property } = _decorator;
 
 @ccclass('Wall')
@@ -21,8 +22,15 @@ export class Wall extends Component {
         this.updateUI();
 
         if (this.currentHp <= 0) {
-            alert("游戏结束！城墙已被摧毁")
             console.log("游戏结束！城墙已被摧毁");
+
+            // 触发游戏结束事件
+            const gm = GameManager.instance;
+            if (gm) {
+                gm.gameOver(false);
+            }
+
+            // 暂停游戏
             director.pause();
         }
     }
@@ -32,5 +40,15 @@ export class Wall extends Component {
         if (this.hpLabel) {
             this.hpLabel.string = `城墙: ${this.currentHp}/${this.maxHp}`;
         }
+    }
+
+    // 获取当前血量
+    public getCurrentHp(): number {
+        return this.currentHp;
+    }
+
+    // 检查城墙是否存活
+    public isAlive(): boolean {
+        return this.currentHp > 0;
     }
 }

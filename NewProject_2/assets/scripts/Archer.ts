@@ -8,7 +8,7 @@ export class Archer extends Soldier {
         this.soldierName = "弓箭手";
         this.baseDamage = 2;
         this.baseAttackSpeed = 1;   // 0.8秒攻击一次
-        this.baseRange = 500;
+        this.baseRange = 800;
         this.baseMaxHp = 40;
         this.buyCost = 80;
         this.upgradeCost = 60;

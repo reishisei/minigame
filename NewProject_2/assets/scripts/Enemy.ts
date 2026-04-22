@@ -26,6 +26,7 @@ export class Enemy extends Component {
     private currentHp: number = 0;
     private isMoving: boolean = true;
     private currentTween: any = null;
+    private reachedWall: boolean = false;
 
     start() {
         // 保留已有的X坐标，只设置Y坐标
@@ -79,14 +80,14 @@ export class Enemy extends Component {
     reachWall() {
         if (!this.isMoving) return;
         this.isMoving = false;
-        
+
         // 停止移动动画
         if (this.currentTween) {
             this.currentTween.stop();
         }
-        
+
         console.log("敌人到达城墙");
-        
+
         // 找到城墙并造成伤害
         const wall = this.node.scene.getComponentInChildren('Wall') as any;
         if (wall && wall.takeDamage) {
@@ -94,7 +95,11 @@ export class Enemy extends Component {
         } else {
             console.log("未找到城墙组件");
         }
-        
+
+        // 标记为到达城墙并调用die（用于WaveManager计数）
+        this.reachedWall = true;
+        this.die();
+
         // 销毁自己
         this.node.destroy();
     }
@@ -102,12 +107,15 @@ export class Enemy extends Component {
     die() {
         console.log("敌人死亡");
 
-        // 使用新的奖励系统
-        const gm = GameManager.instance;
-        if (gm) {
-            gm.enemyKilled(this.enemyType);
-        } else {
-            console.log("GameManager 未找到");
+        // 只有未到达城墙的敌人才给予奖励
+        if (!this.reachedWall) {
+            // 使用新的奖励系统
+            const gm = GameManager.instance;
+            if (gm) {
+                gm.enemyKilled(this.enemyType);
+            } else {
+                console.log("GameManager 未找到");
+            }
         }
 
         // 停止移动动画
@@ -115,7 +123,10 @@ export class Enemy extends Component {
             this.currentTween.stop();
         }
 
-        this.node.destroy();
+        // 只有未到达城墙的敌人才在这里销毁（到达城墙的敌人在reachWall中销毁）
+        if (!this.reachedWall) {
+            this.node.destroy();
+        }
     }
     
     // 停止移动（用于暂停）

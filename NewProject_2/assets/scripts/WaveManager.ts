@@ -1,5 +1,7 @@
 import { _decorator, Component, Prefab, instantiate, Label, ProgressBar } from 'cc';
 import { GameManager } from './GameManager';
+import { Wall } from './Wall';
+import { LevelManager } from './LevelManager';
 const { ccclass, property } = _decorator;
 
 // 子波数据类（可在编辑器中配置）
@@ -233,7 +235,7 @@ export class WaveManager extends Component {
 
             const originalDie = enemyScript.die;
             enemyScript.die = () => {
-                this.onEnemyDied();
+                this.onEnemyDied(enemy);
                 if (originalDie) {
                     originalDie.call(enemyScript);
                 }
@@ -245,12 +247,17 @@ export class WaveManager extends Component {
     }
 
     // 敌人死亡回调
-    private onEnemyDied(): void {
+    private onEnemyDied(enemyNode?: any): void {
         this.enemiesRemaining--;
         this.updateWaveUI();
 
         if (this.enemiesRemaining < 0) {
             this.enemiesRemaining = 0;
+        }
+
+        // 从活动敌人集合中移除
+        if (enemyNode && this.activeEnemies.has(enemyNode)) {
+            this.activeEnemies.delete(enemyNode);
         }
 
         console.log(`敌人死亡，剩余: ${this.enemiesRemaining}`);
@@ -260,6 +267,18 @@ export class WaveManager extends Component {
     private completeCurrentWave(): void {
         this.isWaveActive = false;
         this.currentWaveIndex++;
+
+        // 检查城墙是否存活
+        const wall = this.getWallComponent();
+        if (wall && !wall.isAlive()) {
+            console.log("城墙已被摧毁，游戏结束！");
+            // 触发游戏结束事件
+            const gm = GameManager.instance;
+            if (gm) {
+                gm.gameOver(false);
+            }
+            return;
+        }
 
         // 波次间休息时间
         this.isBetweenWaves = true;
@@ -285,9 +304,63 @@ export class WaveManager extends Component {
 
     // 完成所有波次
     private completeAllWaves(): void {
-        console.log("所有波次已完成！关卡胜利！");
-        // TODO: 触发关卡完成事件
-        // LevelManager.instance.completeCurrentLevel(1000, 3);
+        console.log("所有波次已完成！");
+
+        // 检查城墙是否存活
+        const wall = this.getWallComponent();
+        if (wall && !wall.isAlive()) {
+            console.log("城墙已被摧毁，游戏结束！");
+            // 触发游戏结束事件
+            const gm = GameManager.instance;
+            if (gm) {
+                gm.gameOver(false);
+            }
+            return;
+        }
+
+        console.log("关卡胜利！");
+
+        // 触发关卡完成事件
+        const gm = GameManager.instance;
+        if (gm) {
+            // 计算得分（基于剩余城墙血量、波次完成情况等）
+            const score = this.calculateLevelScore();
+            const stars = this.calculateStars(score);
+            gm.levelCompleted(LevelManager.instance?.currentLevelId || 1, score, stars);
+        }
+    }
+
+    // 计算关卡得分
+    private calculateLevelScore(): number {
+        let score = 1000; // 基础分
+
+        // 基于剩余城墙血量加分
+        const wall = this.getWallComponent();
+        if (wall && wall.isAlive()) {
+            const hpPercentage = wall.getCurrentHp() / wall.maxHp;
+            score += Math.floor(hpPercentage * 500); // 最多加500分
+        }
+
+        // 基于波次完成速度加分（假设有计时器）
+        // 这里可以添加基于完成时间的加分
+
+        // 基于击杀效率加分（总敌人数量 vs 到达城墙的敌人数量）
+        // 这里可以添加更复杂的逻辑
+
+        console.log(`关卡得分计算: ${score}`);
+        return score;
+    }
+
+    // 计算星星数量（基于得分）
+    private calculateStars(score: number): number {
+        if (score >= 1500) {
+            return 3;
+        } else if (score >= 1200) {
+            return 2;
+        } else if (score >= 1000) {
+            return 1;
+        }
+        return 0;
     }
 
     // 更新UI
@@ -397,5 +470,23 @@ export class WaveManager extends Component {
         this.activeEnemies.clear();
 
         console.log("WaveManager 已重置");
+    }
+
+    // 获取城墙组件
+    private getWallComponent(): Wall | null {
+        // 在场景中查找城墙节点
+        const wallNode = this.node.scene.getChildByName('Wall');
+        if (!wallNode) {
+            console.warn("未找到城墙节点");
+            return null;
+        }
+
+        const wall = wallNode.getComponent(Wall);
+        if (!wall) {
+            console.warn("城墙节点上没有Wall组件");
+            return null;
+        }
+
+        return wall;
     }
 }
