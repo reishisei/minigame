@@ -1,0 +1,57 @@
+[
+  {
+    "id": 1,
+    "name": "训练关",
+    "description": "学习基础操作，熟悉游戏机制",
+    "difficulty": 1,
+    "initialGold": 100,
+    "waveCount": 3,
+    "unlockRequirement": null,
+    "enemyTypes": ["basic"],
+    "maxTowers": 3
+  },
+  {
+    "id": 2,
+    "name": "森林关卡",
+    "description": "对抗快速敌人，需要更快的反应",
+    "difficulty": 2,
+    "initialGold": 150,
+    "waveCount": 5,
+    "unlockRequirement": "complete_level_1",
+    "enemyTypes": ["basic", "fast"],
+    "maxTowers": 4
+  },
+  {
+    "id": 3,
+    "name": "山地关卡",
+    "description": "面对装甲敌人，需要更强的火力",
+    "difficulty": 3,
+    "initialGold": 200,
+    "waveCount": 6,
+    "unlockRequirement": "complete_level_2",
+    "enemyTypes": ["basic", "fast", "armored"],
+    "maxTowers": 5
+  },
+  {
+    "id": 4,
+    "name": "天空关卡",
+    "description": "飞行敌人来袭，需要防空塔",
+    "difficulty": 4,
+    "initialGold": 250,
+    "waveCount": 7,
+    "unlockRequirement": "complete_level_3",
+    "enemyTypes": ["basic", "fast", "flying"],
+    "maxTowers": 6
+  },
+  {
+    "id": 5,
+    "name": "Boss关卡",
+    "description": "最终Boss战，考验你的策略",
+    "difficulty": 5,
+    "initialGold": 300,
+    "waveCount": 8,
+    "unlockRequirement": "complete_level_4",
+    "enemyTypes": ["basic", "fast", "armored", "flying", "boss"],
+    "maxTowers": 7
+  }
+]
