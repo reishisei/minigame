@@ -191,6 +191,9 @@ export class WaveManager extends Component {
     private spawnEnemy(enemyType: string): void {
         let prefab: Prefab | null = null;
 
+        // 统一转为小写，避免配置大小写不一致导致无法匹配
+        enemyType = enemyType.toLowerCase();
+
         switch (enemyType) {
             case "basic":
                 prefab = this.basicEnemyPrefab;
