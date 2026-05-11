@@ -110,13 +110,13 @@
     "_dstBlendFactor": 4,
     "_color": {
       "__type__": "cc.Color",
-      "r": 255,
-      "g": 0,
-      "b": 0,
+      "r": 56,
+      "g": 56,
+      "b": 56,
       "a": 255
     },
     "_spriteFrame": {
-      "__uuid__": "b730527c-3233-41c2-aaf7-7cdab58f9749@f9941",
+      "__uuid__": "b4db4ad1-e754-4a37-a376-62296592ae2a@f9941",
       "__expectedType__": "cc.SpriteFrame"
     },
     "_type": 0,
@@ -182,7 +182,7 @@
     "moveSpeed": 60,
     "damageToWall": 1,
     "maxHp": 10,
-    "enemyType": "ArmoredEnemy",
+    "enemyType": "Armored",
     "armorReduction": 0.5,
     "_id": ""
   },

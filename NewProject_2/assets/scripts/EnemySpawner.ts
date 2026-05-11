@@ -10,7 +10,7 @@ export class EnemySpawner extends Component {
     spawnInterval: number = 1.0;
 
     @property
-    spawnRangeX: number = 375;
+    spawnRangeX: number = 350;
 
     start() {
         console.log("EnemySpawner 父节点位置:", this.node.position.x);

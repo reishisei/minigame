@@ -226,7 +226,7 @@ export class WaveManager extends Component {
         this.node.addChild(enemy);
 
         // 随机X位置
-        const spawnRangeX = 375; // 与 EnemySpawner 一致
+        const spawnRangeX = 350; // 总宽度700
         const randomX = Math.random() * spawnRangeX * 2 - spawnRangeX;
         enemy.setPosition(randomX, 500, 0);
 
